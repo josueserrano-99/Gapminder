@@ -1,0 +1,117 @@
+"""Solution for the Week 5 NumPy arrays and matplotlib exercise."""
+
+from pathlib import Path
+
+import matplotlib
+
+# Use a non-interactive backend so the plots can also be created from a terminal.
+matplotlib.use("Agg")
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
+
+# Locate the data and output folders relative to this script. This allows the
+# project to run after the repository is downloaded or cloned to another folder.
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+DATA_DIR = PROJECT_ROOT / "data"
+OUTPUT_DIR = PROJECT_ROOT / "output"
+OUTPUT_DIR.mkdir(exist_ok=True)
+
+
+def part_a_loop_through_array() -> None:
+    """Create the three-dimensional array and access every value."""
+
+    # Create the 3D NumPy array supplied in the exercise.
+    arr3 = np.array(
+        [
+            [[1, 2, 3], [4, 5, 6]],
+            [[7, 8, 9], [10, 11, 12]],
+        ]
+    )
+
+    # Display the complete array and its dimensions before looping through it.
+    print("Three-dimensional array:")
+    print(arr3)
+    print(f"Array shape: {arr3.shape}")
+    print("Elements accessed with three nested loops:")
+
+    # Each loop handles one dimension. The variables i, j, and k identify the
+    # block, row, and individual value being accessed.
+    for i in range(arr3.shape[0]):
+        for j in range(arr3.shape[1]):
+            for k in range(arr3.shape[2]):
+                print(f"arr3[{i}, {j}, {k}] = {arr3[i, j, k]}")
+
+
+def part_b1_gdp_line_plot() -> None:
+    """Compare GDP per capita in China and India from 1952 through 2007."""
+
+    # Load the Asian GDP data and use country names as the row index.
+    data_asia = pd.read_csv(
+        DATA_DIR / "gapminder_gdp_asia.csv",
+        index_col="country",
+    )
+
+    # Select China and India. Transposing changes the years into rows and the
+    # two countries into columns, which is convenient for a line plot.
+    china_india = data_asia.loc[["China", "India"]].transpose()
+
+    # Remove the gdpPercap_ prefix and convert the remaining labels into years.
+    china_india.index = (
+        china_india.index.str.replace("gdpPercap_", "").astype(int)
+    )
+
+    # Plot one line for each country and add all required chart labels.
+    ax = china_india.plot(figsize=(8, 5), linewidth=2)
+    ax.set_title("GDP per Capita in China and India, 1952-2007")
+    ax.set_xlabel("Year")
+    ax.set_ylabel("GDP per Capita (US dollars)")
+    ax.legend(title="Country", loc="lower right")
+    ax.grid(True, alpha=0.25)
+
+    # Prevent labels from being clipped and save the completed plot.
+    plt.tight_layout()
+    plt.savefig(OUTPUT_DIR / "china_india_gdp_1952_2007.png", dpi=200)
+    plt.close()
+
+
+def part_b2_gdp_life_expectancy_scatter() -> None:
+    """Compare 2007 GDP and life expectancy using population-sized markers."""
+
+    # Load the full Gapminder dataset and declare country as the row index.
+    data_all = pd.read_csv(
+        DATA_DIR / "gapminder_all.csv",
+        index_col="country",
+    )
+
+    # Create the requested scatter plot using the exact plot arguments from the
+    # assignment. GDP is on the x-axis, life expectancy is on the y-axis, and
+    # marker area represents population in millions.
+    data_all.plot(
+        kind="scatter",
+        x="gdpPercap_2007",
+        y="lifeExp_2007",
+        s=data_all["pop_2007"] / 1e6,
+    )
+
+    # Generate the required title with Python code.
+    plt.title("GDP per Capita and Life Expectancy in 2007")
+
+    # Save the final scatter plot in the repository's output folder.
+    plt.savefig(OUTPUT_DIR / "gdp_life_expectancy_2007.png", dpi=200)
+    plt.close()
+
+
+def main() -> None:
+    """Run every part of the assignment."""
+
+    part_a_loop_through_array()
+    part_b1_gdp_line_plot()
+    part_b2_gdp_life_expectancy_scatter()
+    print("Both plot files were created in the output folder.")
+
+
+if __name__ == "__main__":
+    main()
